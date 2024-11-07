@@ -13,6 +13,8 @@ class Board {
 
     private int dimension;
 
+    private int lastcolor;
+
     public Board() {
     }
 
@@ -62,6 +64,7 @@ class Board {
                 }
             }
         }
+        System.out.println();
     }
 
     public void print() {
@@ -103,10 +106,20 @@ class Board {
         }
     }
 
-    void setLastMove(Move lastMove) {
+    void setLastMove(Move lastMove, int color) {
+        if (this.lastMove == null) {
+            this.lastMove = new Move();
+        }
         this.lastMove.setRow(lastMove.getRow());
         this.lastMove.setCol(lastMove.getCol());
         this.lastMove.setValue(lastMove.getValue());
+        this.lastcolor = color;
+        if (color == 1) {
+            this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = W;
+        } else {
+            this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = B;
+        }
+
     }
 
     void setLastPlayer(int lastPlayer) {

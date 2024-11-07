@@ -28,7 +28,7 @@ class Main {
         board.printBoard();
         Move move = new Move();
         Move playerMove = new Move(1, 2, 0);
-        board.setLastMove(playerMove);
+        board.setLastMove(playerMove, turn % 2);
         board.printBoard();
 
     }
