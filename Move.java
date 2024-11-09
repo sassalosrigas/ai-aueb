@@ -51,7 +51,14 @@ public class Move {
         this.value = value;
     }
 
-    // boolean isValid(Board b) {
+    boolean isValid(Board b, int colour, Move move) {
+        int gb[][] = b.getGameBoard();
+        int row = move.getRow();
+        int col = move.getCol();
+        if (row < 0 || row > b.getDimension() || col < 0 || col > b.getDimension()) {
+            return false;
+        }
 
-    // }
+        return true;
+    }
 }

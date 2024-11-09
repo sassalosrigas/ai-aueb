@@ -27,7 +27,19 @@ class Main {
         board.initializeBoard();
         board.printBoard();
         Move move = new Move();
-        Move playerMove = new Move(1, 2, 0);
+        System.out.println("Give row");
+        int row = in.nextInt();
+        System.out.println("Give col");
+        int col = in.nextInt();
+        Move playerMove = new Move(row, col, 0);
+        board.setLastMove(playerMove, turn % 2);
+        board.printBoard();
+        turn++;
+        System.out.println("Give row");
+        row = in.nextInt();
+        System.out.println("Give col");
+        col = in.nextInt();
+        playerMove = new Move(row, col, 0);
         board.setLastMove(playerMove, turn % 2);
         board.printBoard();
 
