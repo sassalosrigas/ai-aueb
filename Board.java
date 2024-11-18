@@ -42,10 +42,10 @@ class Board {
     }
 
     public void initializeBoard() {
-        gameBoard[3][3] = W;
-        gameBoard[4][4] = W;
-        gameBoard[3][4] = B;
-        gameBoard[4][3] = B;
+        gameBoard[3][3] = B;
+        gameBoard[4][4] = B;
+        gameBoard[3][4] = W;
+        gameBoard[4][3] = W;
     }
 
     public void printBoard() {
@@ -114,16 +114,75 @@ class Board {
         this.lastMove.setCol(lastMove.getCol());
         this.lastMove.setValue(lastMove.getValue());
         this.lastcolor = color;
-        if (color == 1) {
-            this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = W;
-        } else {
-            this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = B;
-        }
+        /*
+         * if (color == 1) {
+         * this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = W;
+         * } else {
+         * this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = B;
+         * }
+         */
 
+    }
+
+    void makeMove(Move lastMove, int colour) {
+        int row = this.lastMove.getRow();
+        int col = this.lastMove.getCol();
+        int enemycolour = (colour == 1) ? -1 : 1;
+        int dir[][] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { 1, -1 }, { -1, 1 } };
+        this.gameBoard[row][col] = colour;
+        for (int[] d : dir) {
+            int temp_r = row + d[0];
+            int temp_c = col + d[1];
+            boolean exists_reverse = false;
+            while (temp_r > 0 && temp_r < this.getDimension() && temp_c > 0 && temp_c < this.getDimension()) {
+                if (this.gameBoard[temp_r][temp_c] == enemycolour) {
+                    exists_reverse = true;
+                } else if (this.gameBoard[temp_r][temp_c] == enemycolour * (-1) && exists_reverse == true) {
+                    temp_r = row + d[0];
+                    temp_c = col + d[1];
+                    while (temp_r > 0 && temp_r < this.getDimension() && temp_c > 0 && temp_c < this.getDimension()) {
+                        if (this.gameBoard[temp_r][temp_c] == enemycolour) {
+                            this.gameBoard[temp_r][temp_c] = this.gameBoard[temp_r][temp_c] * (-1);
+                        }
+                        temp_r = temp_r + d[0];
+                        temp_c = temp_c + d[1];
+                    }
+                    break;
+                } else {
+                    break;
+                }
+                temp_r = temp_r + d[0];
+                temp_c = temp_c + d[1];
+            }
+        }
     }
 
     void setLastPlayer(int lastPlayer) {
         this.lastPlayer = lastPlayer;
+    }
+
+    int countWhite() {
+        int count = 0;
+        for (int i = 0; i < this.getDimension(); i++) {
+            for (int j = 0; j < this.getDimension(); j++) {
+                if (this.gameBoard[i][j] == W) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    int countBlack() {
+        int count = 0;
+        for (int i = 0; i < this.getDimension(); i++) {
+            for (int j = 0; j < this.getDimension(); j++) {
+                if (this.gameBoard[i][j] == B) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
 }
