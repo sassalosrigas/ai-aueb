@@ -78,7 +78,7 @@ class Board {
     }
 
     public int evaluate() {
-        return 0;
+        return this.countBlack() - this.countWhite();
     }
 
     public boolean isValid(int row, int col, int colour) {
@@ -139,6 +139,13 @@ class Board {
             }
         }
         System.out.println("No more valid moves game over");
+        if (this.countBlack() > countWhite()) {
+            System.out.println("Black wins");
+        } else if (this.countWhite() > this.countBlack()) {
+            System.out.println("White wins");
+        } else {
+            System.out.println("It's a tie");
+        }
         return true;
     }
 
