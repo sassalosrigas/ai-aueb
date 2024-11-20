@@ -25,48 +25,34 @@ class Main {
                 System.out.println("Invalid input");
             }
         }
-        int turn = -1;
-        int total_pieces = 0;
-        int black_pieces = 2;
-        int white_pieces = 2;
         Board board = new Board(8);
         board.initializeBoard();
         board.printBoard();
         Move move = new Move();
-        boolean end = false;
-        while (end == false) {
-            boolean rightmove = false;
-            while (rightmove == false) {
-                System.out.println("Give row");
-                int row = in.nextInt();
-                System.out.println("Give col");
-                int col = in.nextInt();
-                Move playerMove = new Move(row, col, 0);
-                if (playerMove.isValid(board, turn, playerMove)) {
-                    board.setLastMove(playerMove, turn);
-                    board.makeMove(playerMove, turn);
-                    board.printBoard();
-                    turn = turn * (-1);
-                    rightmove = true;
-                    total_pieces++;
-                    black_pieces = board.countBlack();
-                    white_pieces = board.countWhite();
-                } else {
-                    System.out.println("Invalid move\n");
-                    board.printBoard();
-                }
+        while (!board.isTerminal()) {
+            switch (board.getLastPlayer()) {
+                case Board.W:
+                    System.out.println("Black plays");
+                    System.out.println("Give row");
+                    int row = in.nextInt();
+                    System.out.println("Give col");
+                    int col = in.nextInt();
+                    Move playerMove = new Move(row, col);
+                    board.makeMove(playerMove.getRow(), playerMove.getCol(), Board.B);
+                    break;
+                case Board.B:
+                    System.out.println("White plays");
+                    System.out.println("Give row");
+                    row = in.nextInt();
+                    System.out.println("Give col");
+                    col = in.nextInt();
+                    playerMove = new Move(row, col);
+                    board.makeMove(playerMove.getRow(), playerMove.getCol(), Board.W);
+                default:
+                    break;
             }
         }
 
-        /*
-         * System.out.println("Give row");
-         * row = in.nextInt();
-         * System.out.println("Give col");
-         * col = in.nextInt();
-         * playerMove = new Move(row, col, 0);
-         * board.setLastMove(playerMove, turn % 2);
-         * board.printBoard();
-         */
     }
 
 }

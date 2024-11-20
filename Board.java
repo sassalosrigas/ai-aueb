@@ -15,6 +15,8 @@ class Board {
 
     private int lastcolor;
 
+    // private Move move;
+
     public Board() {
     }
 
@@ -46,6 +48,7 @@ class Board {
         gameBoard[4][4] = B;
         gameBoard[3][4] = W;
         gameBoard[4][3] = W;
+        this.setLastPlayer(1);
     }
 
     public void printBoard() {
@@ -78,7 +81,64 @@ class Board {
         return 0;
     }
 
+    public boolean isValid(int row, int col, int colour) {
+        int gb[][] = this.getGameBoard();
+        if (row < 0 || row > this.getDimension() || col < 0 || col > this.getDimension() || gb[row][col] != 0) {
+            return false;
+        }
+        int enemycolour = (colour == 1) ? -1 : 1;
+        int dir[][] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { 1, -1 }, { -1, 1 } };
+        for (int[] d : dir) {
+            int temp_r = row + d[0];
+            int temp_c = col + d[1];
+            boolean exists_reverse = false;
+            while (temp_r > 0 && temp_r < this.getDimension() && temp_c > 0 && temp_c < this.getDimension()) {
+                if (gb[temp_r][temp_c] == enemycolour) {
+                    exists_reverse = true;
+                } else if (gb[temp_r][temp_c] != 0 && gb[temp_r][temp_c] != enemycolour && exists_reverse == true) {
+                    return true;
+                } else {
+                    break;
+                }
+                temp_r = temp_r + d[0];
+                temp_c = temp_c + d[1];
+            }
+        }
+        return false;
+    }
+
     public boolean isTerminal() {
+        if (this.count_pieces() == (this.getDimension() * this.getDimension())) {
+            return true;
+        }
+        int colour = this.getLastPlayer() * (-1);
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                if (this.gameBoard[i][j] == EMPTY) {
+                    Move move = new Move(i, j);
+                    if (this.isValid(move.getRow(), move.getCol(), colour)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        if (colour == this.W) {
+            System.out.println("No more valid moves for white swithing to black");
+        } else {
+            System.out.println("No more valid moves for black swithing to white");
+        }
+        this.setLastPlayer(colour);
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                if (this.gameBoard[i][j] == EMPTY) {
+                    Move move = new Move(i, j);
+                    if (this.isValid(move.getRow(), move.getCol(), colour * (-1))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        System.out.println("No more valid moves game over");
         return true;
     }
 
@@ -98,7 +158,7 @@ class Board {
         return this.dimension;
     }
 
-    void setGameBoard(int[][] gameBoard) {
+    public void setGameBoard(int[][] gameBoard) {
         for (int i = 0; i < this.dimension; i++) {
             for (int j = 0; j < this.dimension; j++) {
                 this.gameBoard[i][j] = gameBoard[i][j];
@@ -106,28 +166,22 @@ class Board {
         }
     }
 
-    void setLastMove(Move lastMove, int color) {
+    public void setLastMove(Move lastMove) {
         if (this.lastMove == null) {
             this.lastMove = new Move();
         }
         this.lastMove.setRow(lastMove.getRow());
         this.lastMove.setCol(lastMove.getCol());
         this.lastMove.setValue(lastMove.getValue());
-        this.lastcolor = color;
-        /*
-         * if (color == 1) {
-         * this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = W;
-         * } else {
-         * this.gameBoard[this.lastMove.getRow()][this.lastMove.getCol()] = B;
-         * }
-         */
-
     }
 
-    void makeMove(Move lastMove, int colour) {
-        int row = this.lastMove.getRow();
-        int col = this.lastMove.getCol();
+    public void makeMove(int row, int col, int colour) {
         int enemycolour = (colour == 1) ? -1 : 1;
+        if (!isValid(row, col, colour)) {
+            System.out.println("Invalid move");
+            this.printBoard();
+            return;
+        }
         int dir[][] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { 1, -1 }, { -1, 1 } };
         this.gameBoard[row][col] = colour;
         for (int[] d : dir) {
@@ -155,13 +209,16 @@ class Board {
                 temp_c = temp_c + d[1];
             }
         }
+        this.lastMove = new Move(row, col);
+        this.setLastPlayer(this.getLastPlayer() * (-1));
+        this.printBoard();
     }
 
-    void setLastPlayer(int lastPlayer) {
+    public void setLastPlayer(int lastPlayer) {
         this.lastPlayer = lastPlayer;
     }
 
-    int countWhite() {
+    public int countWhite() {
         int count = 0;
         for (int i = 0; i < this.getDimension(); i++) {
             for (int j = 0; j < this.getDimension(); j++) {
@@ -173,7 +230,7 @@ class Board {
         return count;
     }
 
-    int countBlack() {
+    public int countBlack() {
         int count = 0;
         for (int i = 0; i < this.getDimension(); i++) {
             for (int j = 0; j < this.getDimension(); j++) {
@@ -183,6 +240,10 @@ class Board {
             }
         }
         return count;
+    }
+
+    public int count_pieces() {
+        return this.countWhite() + this.countBlack();
     }
 
 }
