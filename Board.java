@@ -92,7 +92,7 @@ class Board {
             int temp_r = row + d[0];
             int temp_c = col + d[1];
             boolean exists_reverse = false;
-            while (temp_r > 0 && temp_r < this.getDimension() && temp_c > 0 && temp_c < this.getDimension()) {
+            while (temp_r >= 0 && temp_r < this.getDimension() && temp_c >= 0 && temp_c < this.getDimension()) {
                 if (gb[temp_r][temp_c] == enemycolour) {
                     exists_reverse = true;
                 } else if (gb[temp_r][temp_c] != 0 && gb[temp_r][temp_c] != enemycolour && exists_reverse == true) {
@@ -195,7 +195,7 @@ class Board {
             int temp_r = row + d[0];
             int temp_c = col + d[1];
             boolean exists_reverse = false;
-            while (temp_r > 0 && temp_r < this.getDimension() && temp_c > 0 && temp_c < this.getDimension()) {
+            while (temp_r >= 0 && temp_r < this.getDimension() && temp_c >= 0 && temp_c < this.getDimension()) {
                 if (this.gameBoard[temp_r][temp_c] == enemycolour) {
                     exists_reverse = true;
                 } else if (this.gameBoard[temp_r][temp_c] == enemycolour * (-1) && exists_reverse == true) {

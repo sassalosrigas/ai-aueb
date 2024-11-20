@@ -12,12 +12,14 @@ class Main {
             System.out.println("Do you want to play first? Y(Yes) N(No)");
             String first = in.nextLine();
             if (first.equals("Y")) {
-                int person = -1;
+                Player playerBlack = new Player(Board.B);
+                Player playerWhite = new Player(depth, Board.W);
                 int computer = 1;
                 f = true;
                 System.out.println("You are black");
             } else if (first.equals("N")) {
-                int person = 1;
+                Player playerBlack = new Player(depth, Board.B);
+                Player playerWhite = new Player(Board.W);
                 int computer = -1;
                 f = true;
                 System.out.println("You are white");
@@ -48,11 +50,11 @@ class Main {
                     col = in.nextInt();
                     playerMove = new Move(row, col);
                     board.makeMove(playerMove.getRow(), playerMove.getCol(), Board.W);
+                    break;
                 default:
                     break;
             }
+            System.out.println("Position evaluation " + board.evaluate());
         }
-
     }
-
 }
