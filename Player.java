@@ -20,14 +20,13 @@ class Player {
 
     public Move MiniMax(Board board) {
         if (this.playerColour == Board.W) {
-            return max(new Board(board), this.maxDepth);
+            return max(new Board(board), 0);
         } else {
-            return min(new Board(board), this.maxDepth);
+            return min(new Board(board), 0);
         }
     }
 
     public Move max(Board board, int depth) {
-
         Random r = new Random();
         /*
          * If MAX is called on a state that is terminal or after a maximum depth is

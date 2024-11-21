@@ -11,49 +11,37 @@ class Board {
 
     private Move lastMove;
 
-    private int dimension;
-
     public Board() {
-    }
-
-    public Board(int dimension) {
         this.lastMove = new Move();
         this.lastPlayer = W;
-        this.dimension = dimension;
-        this.gameBoard = new int[dimension][dimension];
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
-                gameBoard[i][j] = EMPTY;
+        this.gameBoard = new int[8][8];
+        for (int i = 0; i < this.gameBoard.length; i++) {
+            for (int j = 0; j < this.gameBoard.length; j++) {
+                this.gameBoard[i][j] = EMPTY;
             }
         }
-
+        gameBoard[3][3] = B;
+        gameBoard[4][4] = B;
+        gameBoard[3][4] = W;
+        gameBoard[4][3] = W;
+        this.setLastPlayer(W);
     }
 
     // copy constructor
     public Board(Board board) {
-        // this.dimension = dimension;
         this.lastMove = board.lastMove;
         this.lastPlayer = board.lastPlayer;
         this.gameBoard = new int[8][8];
         for (int i = 0; i < gameBoard.length; i++) {
             for (int j = 0; j < gameBoard.length; j++) {
-                gameBoard[i][j] = this.gameBoard[i][j] = board.gameBoard[i][j];
-                ;
+                this.gameBoard[i][j] = board.gameBoard[i][j];
             }
         }
     }
 
-    public void initializeBoard() {
-        gameBoard[3][3] = B;
-        gameBoard[4][4] = B;
-        gameBoard[3][4] = W;
-        gameBoard[4][3] = W;
-        this.setLastPlayer(1);
-    }
-
     public void printBoard() {
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (gameBoard[i][j] == W) {
                     System.out.print("W");
                 } else if (gameBoard[i][j] == B) {
@@ -62,7 +50,7 @@ class Board {
                     System.out.print("-");
                 }
 
-                if (j == this.dimension - 1) {
+                if (j == 7) {
                     System.out.println();
                 }
             }
@@ -75,8 +63,8 @@ class Board {
 
     ArrayList<Board> getChildren(int colour) {
         ArrayList<Board> children = new ArrayList<>();
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (this.isValid(i, j, colour)) {
                     Board child = new Board(this);
                     child.makeMove(i, j, colour);
@@ -93,7 +81,7 @@ class Board {
 
     public boolean isValid(int row, int col, int colour) {
         int gb[][] = this.getGameBoard();
-        if (row < 0 || row > this.getDimension() || col < 0 || col > this.getDimension() || gb[row][col] != 0) {
+        if (row < 0 || row > 8 || col < 0 || col > 8 || gb[row][col] != 0) {
             return false;
         }
         int enemycolour = (colour == 1) ? -1 : 1;
@@ -102,7 +90,7 @@ class Board {
             int temp_r = row + d[0];
             int temp_c = col + d[1];
             boolean exists_reverse = false;
-            while (temp_r >= 0 && temp_r < this.getDimension() && temp_c >= 0 && temp_c < this.getDimension()) {
+            while (temp_r >= 0 && temp_r < 8 && temp_c >= 0 && temp_c < 8) {
                 if (gb[temp_r][temp_c] == enemycolour) {
                     exists_reverse = true;
                 } else if (gb[temp_r][temp_c] != 0 && gb[temp_r][temp_c] != enemycolour && exists_reverse == true) {
@@ -118,12 +106,12 @@ class Board {
     }
 
     public boolean isTerminal() {
-        if (this.count_pieces() == (this.getDimension() * this.getDimension())) {
+        if (this.count_pieces() == (64)) {
             return true;
         }
         int colour = this.getLastPlayer() * (-1);
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (this.gameBoard[i][j] == EMPTY) {
                     Move move = new Move(i, j);
                     if (this.isValid(move.getRow(), move.getCol(), colour)) {
@@ -138,8 +126,8 @@ class Board {
             System.out.println("No more valid moves for black swithing to white");
         }
         this.setLastPlayer(colour);
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (this.gameBoard[i][j] == EMPTY) {
                     Move move = new Move(i, j);
                     if (this.isValid(move.getRow(), move.getCol(), colour * (-1))) {
@@ -171,13 +159,9 @@ class Board {
         return this.gameBoard;
     }
 
-    public int getDimension() {
-        return this.dimension;
-    }
-
     public void setGameBoard(int[][] gameBoard) {
-        for (int i = 0; i < this.dimension; i++) {
-            for (int j = 0; j < this.dimension; j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 this.gameBoard[i][j] = gameBoard[i][j];
             }
         }
@@ -200,21 +184,21 @@ class Board {
             int temp_r = row + d[0];
             int temp_c = col + d[1];
             boolean exists_reverse = false;
-            while (temp_r >= 0 && temp_r < this.getDimension() && temp_c >= 0 && temp_c < this.getDimension()) {
+            while (temp_r >= 0 && temp_r < 8 && temp_c >= 0 && temp_c < 8) {
                 if (this.gameBoard[temp_r][temp_c] == enemycolour) {
                     exists_reverse = true;
-                } else if (this.gameBoard[temp_r][temp_c] == enemycolour * (-1) && exists_reverse == true) {
+                } else if (this.gameBoard[temp_r][temp_c] == colour && exists_reverse == true) {
                     temp_r = row + d[0];
                     temp_c = col + d[1];
-                    while (temp_r >= 0 && temp_r < this.getDimension() && temp_c >= 0 && temp_c < this.getDimension()) {
+                    while (temp_r >= 0 && temp_r < 8 && temp_c >= 0 && temp_c < 8) {
                         if (this.gameBoard[temp_r][temp_c] == EMPTY || this.gameBoard[temp_r][temp_c] != enemycolour) {
                             break;
                         }
                         if (this.gameBoard[temp_r][temp_c] == enemycolour) {
                             this.gameBoard[temp_r][temp_c] = colour;
                         }
-                        temp_r = temp_r + d[0];
-                        temp_c = temp_c + d[1];
+                        temp_r += d[0];
+                        temp_c += d[1];
                     }
                     break;
                 } else {
@@ -224,7 +208,7 @@ class Board {
                 temp_c = temp_c + d[1];
             }
         }
-        this.lastMove = new Move(row, col);
+        this.lastMove = new Move(row, col, this.evaluate());
         this.setLastPlayer(this.getLastPlayer() * (-1));
     }
 
@@ -234,8 +218,8 @@ class Board {
 
     public int countWhite() {
         int count = 0;
-        for (int i = 0; i < this.getDimension(); i++) {
-            for (int j = 0; j < this.getDimension(); j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (this.gameBoard[i][j] == W) {
                     count++;
                 }
@@ -246,8 +230,8 @@ class Board {
 
     public int countBlack() {
         int count = 0;
-        for (int i = 0; i < this.getDimension(); i++) {
-            for (int j = 0; j < this.getDimension(); j++) {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
                 if (this.gameBoard[i][j] == B) {
                     count++;
                 }
