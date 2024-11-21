@@ -27,6 +27,8 @@ class Main {
                 System.out.println("Invalid input");
             }
         }
+        Player playerBlack = new Player(Board.B);
+        Player playerWhite = new Player(depth, Board.W);
         Board board = new Board(8);
         board.initializeBoard();
         board.printBoard();
@@ -39,21 +41,26 @@ class Main {
                     int row = in.nextInt();
                     System.out.println("Give col");
                     int col = in.nextInt();
-                    Move playerMove = new Move(row, col);
+                    Move playerMove = new Move(row, col, 0);
                     board.makeMove(playerMove.getRow(), playerMove.getCol(), Board.B);
                     break;
                 case Board.B:
                     System.out.println("White plays");
-                    System.out.println("Give row");
-                    row = in.nextInt();
-                    System.out.println("Give col");
-                    col = in.nextInt();
-                    playerMove = new Move(row, col);
-                    board.makeMove(playerMove.getRow(), playerMove.getCol(), Board.W);
+                    Move moveW = playerWhite.MiniMax(board);
+                    board.makeMove(moveW.getRow(), moveW.getCol(), Board.W);
+                    /*
+                     * System.out.println("Give row");
+                     * row = in.nextInt();
+                     * System.out.println("Give col");
+                     * col = in.nextInt();
+                     * playerMove = new Move(row, col);
+                     * board.makeMove(playerMove.getRow(), playerMove.getCol(), Board.W);
+                     */
                     break;
                 default:
                     break;
             }
+            board.printBoard();
             System.out.println("Position evaluation " + board.evaluate());
         }
     }

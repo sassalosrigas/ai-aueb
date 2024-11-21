@@ -17,6 +17,8 @@ class Board {
     }
 
     public Board(int dimension) {
+        this.lastMove = new Move();
+        this.lastPlayer = W;
         this.dimension = dimension;
         this.gameBoard = new int[dimension][dimension];
         for (int i = 0; i < dimension; i++) {
@@ -30,9 +32,11 @@ class Board {
     // copy constructor
     public Board(Board board) {
         // this.dimension = dimension;
-        this.gameBoard = new int[dimension][dimension];
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
+        this.lastMove = board.lastMove;
+        this.lastPlayer = board.lastPlayer;
+        this.gameBoard = new int[8][8];
+        for (int i = 0; i < gameBoard.length; i++) {
+            for (int j = 0; j < gameBoard.length; j++) {
                 gameBoard[i][j] = this.gameBoard[i][j] = board.gameBoard[i][j];
                 ;
             }
@@ -48,8 +52,8 @@ class Board {
     }
 
     public void printBoard() {
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
                 if (gameBoard[i][j] == W) {
                     System.out.print("W");
                 } else if (gameBoard[i][j] == B) {
@@ -58,7 +62,7 @@ class Board {
                     System.out.print("-");
                 }
 
-                if (j == dimension - 1) {
+                if (j == this.dimension - 1) {
                     System.out.println();
                 }
             }
@@ -69,8 +73,18 @@ class Board {
     public void print() {
     }
 
-    ArrayList<Board> getChildren(int letter) {
-        return null;
+    ArrayList<Board> getChildren(int colour) {
+        ArrayList<Board> children = new ArrayList<>();
+        for (int i = 0; i < this.dimension; i++) {
+            for (int j = 0; j < this.dimension; j++) {
+                if (this.isValid(i, j, colour)) {
+                    Board child = new Board(this);
+                    child.makeMove(i, j, colour);
+                    children.add(child);
+                }
+            }
+        }
+        return children;
     }
 
     public int evaluate() {
@@ -170,9 +184,6 @@ class Board {
     }
 
     public void setLastMove(Move lastMove) {
-        if (this.lastMove == null) {
-            this.lastMove = new Move();
-        }
         this.lastMove.setRow(lastMove.getRow());
         this.lastMove.setCol(lastMove.getCol());
         this.lastMove.setValue(lastMove.getValue());
@@ -181,8 +192,6 @@ class Board {
     public void makeMove(int row, int col, int colour) {
         int enemycolour = (colour == 1) ? -1 : 1;
         if (!isValid(row, col, colour)) {
-            System.out.println("Invalid move");
-            this.printBoard();
             return;
         }
         int dir[][] = { { 0, 1 }, { 1, 1 }, { 1, 0 }, { -1, 0 }, { 0, -1 }, { -1, -1 }, { 1, -1 }, { -1, 1 } };
@@ -197,9 +206,12 @@ class Board {
                 } else if (this.gameBoard[temp_r][temp_c] == enemycolour * (-1) && exists_reverse == true) {
                     temp_r = row + d[0];
                     temp_c = col + d[1];
-                    while (temp_r > 0 && temp_r < this.getDimension() && temp_c > 0 && temp_c < this.getDimension()) {
+                    while (temp_r >= 0 && temp_r < this.getDimension() && temp_c >= 0 && temp_c < this.getDimension()) {
+                        if (this.gameBoard[temp_r][temp_c] == EMPTY || this.gameBoard[temp_r][temp_c] != enemycolour) {
+                            break;
+                        }
                         if (this.gameBoard[temp_r][temp_c] == enemycolour) {
-                            this.gameBoard[temp_r][temp_c] = this.gameBoard[temp_r][temp_c] * (-1);
+                            this.gameBoard[temp_r][temp_c] = colour;
                         }
                         temp_r = temp_r + d[0];
                         temp_c = temp_c + d[1];
@@ -214,7 +226,6 @@ class Board {
         }
         this.lastMove = new Move(row, col);
         this.setLastPlayer(this.getLastPlayer() * (-1));
-        this.printBoard();
     }
 
     public void setLastPlayer(int lastPlayer) {
