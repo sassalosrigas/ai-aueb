@@ -13,10 +13,6 @@ class Board {
 
     private int dimension;
 
-    private int lastcolor;
-
-    // private Move move;
-
     public Board() {
     }
 
