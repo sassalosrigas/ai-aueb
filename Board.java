@@ -42,6 +42,7 @@ class Board {
 
     public void printBoard() {
         for (int i = 0; i < 8; i++) {
+            System.out.print(i + 1);
             for (int j = 0; j < 8; j++) {
                 if (gameBoard[i][j] == W) {
                     System.out.print("W");
@@ -55,6 +56,9 @@ class Board {
                     System.out.println();
                 }
             }
+        }
+        for (int i = 0; i <= dimension; i++) {
+            System.out.print((i == 0) ? " " : i);
         }
         System.out.println();
     }

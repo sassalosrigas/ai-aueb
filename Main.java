@@ -44,6 +44,8 @@ class Main {
                         int row = in.nextInt();
                         System.out.println("Give col");
                         int col = in.nextInt();
+                        row -= 1;
+                        col -= 1;
                         Move moveW = new Move(row, col);
                         board.makeMove(moveW.getRow(), moveW.getCol(), Board.W);
                         board.getChildren(Board.B);
@@ -52,7 +54,6 @@ class Main {
                         break;
                 }
                 board.printBoard();
-                // System.out.println("Position evaluation " + board.evaluate());
             }
         } else if (ai == 1) {
             while (!board.isTerminal()) {
@@ -64,6 +65,8 @@ class Main {
                         int row = in.nextInt();
                         System.out.println("Give col");
                         int col = in.nextInt();
+                        row -= 1;
+                        col -= 1;
                         Move moveB = new Move(row, col, board.evaluate());
                         board.makeMove(moveB.getRow(), moveB.getCol(), Board.B);
                         break;
