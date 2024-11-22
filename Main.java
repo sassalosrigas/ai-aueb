@@ -6,12 +6,12 @@ class Main {
     public static void main(String args[]) {
         int ai = 0;
         Scanner in = new Scanner(System.in);
-        System.out.println("Give depth");
+        System.out.print("Give depth: ");
         int depth = in.nextInt();
         in.nextLine();
         boolean f = false;
         while (f == false) {
-            System.out.println("Do you want to play first? Y(Yes) N(No)");
+            System.out.print("Do you want to play first? Y(Yes) N(No): ");
             String first = in.nextLine();
             if (first.equals("Y")) {
                 f = true;
@@ -48,12 +48,12 @@ class Main {
                         col -= 1;
                         Move moveW = new Move(row, col);
                         board.makeMove(moveW.getRow(), moveW.getCol(), Board.W);
-                        board.getChildren(Board.B);
                         break;
                     default:
                         break;
                 }
                 board.printBoard();
+                System.out.println("Evaluation: " + board.evaluate());
             }
         } else if (ai == 1) {
             while (!board.isTerminal()) {
@@ -74,7 +74,6 @@ class Main {
                         System.out.println("White plays");
                         Move moveW = playerWhite.MiniMax(board);
                         board.makeMove(moveW.getRow(), moveW.getCol(), Board.W);
-                        board.getChildren(Board.B);
                         break;
                     default:
                         break;

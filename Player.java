@@ -20,13 +20,13 @@ class Player {
 
     public Move MiniMax(Board board) {
         if (this.playerColour == Board.W) {
-            return max(new Board(board), 0);
+            return max(new Board(board), 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } else {
-            return min(new Board(board), 0);
+            return min(new Board(board), 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
         }
     }
 
-    public Move max(Board board, int depth) {
+    public Move max(Board board, int depth, int alpha, int beta) {
         Random r = new Random();
         /*
          * If MAX is called on a state that is terminal or after a maximum depth is
@@ -41,7 +41,7 @@ class Player {
         Move maxMove = new Move(Integer.MIN_VALUE); // put max node initially to smallest value.
         for (Board child : children) {
             // And for each child min is called, on a lower depth
-            Move move = min(child, depth + 1);
+            Move move = min(child, depth + 1, alpha, beta);
             // The child-move with the greatest value is selected and returned by max
             if (move.getValue() >= maxMove.getValue()) {
                 // If the heuristic has the save value then we randomly choose one of the two
@@ -57,13 +57,17 @@ class Player {
                     maxMove.setCol(child.getLastMove().getCol());
                     maxMove.setValue(move.getValue());
                 }
+                alpha = Math.max(alpha, maxMove.getValue());
+                if (alpha >= beta) {
+                    break; // Beta cutoff
+                }
             }
         }
         return maxMove;
 
     }
 
-    public Move min(Board board, int depth) {
+    public Move min(Board board, int depth, int alpha, int beta) {
         Random r = new Random();
         if (board.isTerminal() || (depth == this.maxDepth)) {
             return new Move(board.getLastMove().getRow(), board.getLastMove().getCol(), board.evaluate());
@@ -71,7 +75,7 @@ class Player {
         ArrayList<Board> children = board.getChildren(Board.B);
         Move minMove = new Move(Integer.MAX_VALUE);
         for (Board child : children) {
-            Move move = max(child, depth + 1);
+            Move move = max(child, depth + 1, alpha, beta);
             if (move.getValue() <= minMove.getValue()) {
                 if ((move.getValue()) == minMove.getValue()) {
                     if (r.nextInt(2) == 0) {
@@ -84,8 +88,13 @@ class Player {
                     minMove.setCol(child.getLastMove().getCol());
                     minMove.setValue(move.getValue());
                 }
+                beta = Math.min(beta, minMove.getValue());
+                if (alpha >= beta) {
+                    break; // Alpha cutoff
+                }
             }
         }
         return minMove;
     }
+
 }
