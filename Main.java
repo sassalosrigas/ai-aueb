@@ -40,9 +40,9 @@ class Main {
                     case Board.B:
                         System.out.println("White plays");
 
-                        System.out.println("Give row");
+                        System.out.print("Give row: ");
                         int row = in.nextInt();
-                        System.out.println("Give col");
+                        System.out.print("Give col: ");
                         int col = in.nextInt();
                         row -= 1;
                         col -= 1;
@@ -61,9 +61,9 @@ class Main {
                     case Board.W:
                         System.out.println("Black plays");
 
-                        System.out.println("Give row");
+                        System.out.print("Give row: ");
                         int row = in.nextInt();
-                        System.out.println("Give col");
+                        System.out.print("Give col: ");
                         int col = in.nextInt();
                         row -= 1;
                         col -= 1;
@@ -80,6 +80,7 @@ class Main {
                         break;
                 }
                 board.printBoard();
+                System.out.println("Evaluation: " + board.evaluate());
             }
         }
     }

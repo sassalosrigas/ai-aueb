@@ -78,7 +78,46 @@ class Board {
     }
 
     public int evaluate() {
-        return this.countBlack() - this.countWhite();
+        int scoreW = 0;
+        int scoreB = 0;
+        for (int i = 0; i < dimension; i++) {
+            for (int j = 0; j < dimension; j++) {
+                if ((i == 0 & j == 0) || (i == 7 & j == 7) || (i == 7 & j == 0) || (i == 0 & j == 7)) {
+                    if (this.gameBoard[i][j] == W) {
+                        scoreW += 10;
+                        continue;
+                    } else if (this.gameBoard[i][j] == B) {
+                        scoreB -= 10;
+                        continue;
+                    }
+                }
+                if ((i == 0 || i == 7) & j > 0 & j < 7) {
+                    if (this.gameBoard[i][j] == W) {
+                        scoreW += 5;
+                        continue;
+                    } else if (this.gameBoard[i][j] == B) {
+                        scoreB -= 5;
+                        continue;
+                    }
+                } else if ((j == 0 || j == 7) & i > 0 & i < 7) {
+                    if (this.gameBoard[i][j] == W) {
+                        scoreW += 5;
+                        continue;
+                    } else if (this.gameBoard[i][j] == B) {
+                        scoreB -= 5;
+                        continue;
+                    }
+                }
+                if (this.gameBoard[i][j] == W) {
+                    scoreW += 1;
+                    continue;
+                } else if (this.gameBoard[i][j] == B) {
+                    scoreB -= 1;
+                    continue;
+                }
+            }
+        }
+        return scoreW + scoreB;
     }
 
     public boolean isValid(int row, int col, int colour) {
@@ -108,7 +147,7 @@ class Board {
     }
 
     public boolean isTerminal() {
-        if (this.count_pieces() == (64)) {
+        if (this.count_pieces() == (64) || this.countBlack() == 0 || this.countWhite() == 0) {
             if (this.countBlack() > countWhite()) {
                 System.out.println("Black wins with");
             } else if (this.countWhite() > this.countBlack()) {
