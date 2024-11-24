@@ -1,5 +1,4 @@
 import java.util.Scanner;
-import java.util.ArrayList;;
 
 class Main {
 
@@ -10,7 +9,7 @@ class Main {
         int depth = in.nextInt();
         in.nextLine();
         boolean f = false;
-        while (f == false) {
+        while (f == false) { // Epilogh prwtou paixth
             System.out.print("Do you want to play first? Y(Yes) N(No): ");
             String first = in.nextLine();
             if (first.equals("Y")) {
@@ -27,24 +26,24 @@ class Main {
         }
         Player playerBlack = new Player(depth, Board.B);
         Player playerWhite = new Player(depth, Board.W);
-        Board board = new Board();
+        Board board = new Board(); // arxikopoihsh kai ektypwsh pinaka
         board.printBoard();
-        if (ai == -1) {
+        if (ai == -1) { // Ai prwto xrhsths deuteros epilogh "N"
             while (!board.isTerminal()) {
                 switch (board.getLastPlayer()) {
                     case Board.W:
                         System.out.println("Black plays");
-                        Move moveB = playerBlack.MiniMax(board);
+                        Move moveB = playerBlack.MiniMax(board); // Klhsh minimax gia automath epilogh kinhshs
                         board.makeMove(moveB.getRow(), moveB.getCol(), Board.B);
                         break;
                     case Board.B:
                         System.out.println("White plays");
 
-                        System.out.print("Give row: ");
+                        System.out.print("Give row: "); // Diavasma suntetagmenwn apo xrhsth
                         int row = in.nextInt();
                         System.out.print("Give col: ");
                         int col = in.nextInt();
-                        row -= 1;
+                        row -= 1; // Diorthosi sintetagmenwn gia na tairiazoun sta boundaries tou array tou board
                         col -= 1;
                         Move moveW = new Move(row, col);
                         board.makeMove(moveW.getRow(), moveW.getCol(), Board.W);
@@ -52,10 +51,9 @@ class Main {
                     default:
                         break;
                 }
-                board.printBoard();
-                System.out.println("Evaluation: " + board.evaluate());
+                board.printBoard(); // Ektiposh pinaka meta apo kathe kinhsh
             }
-        } else if (ai == 1) {
+        } else if (ai == 1) { // Xrhsths prwtos ai deutero epilogh "Y"
             while (!board.isTerminal()) {
                 switch (board.getLastPlayer()) {
                     case Board.W:
@@ -79,8 +77,8 @@ class Main {
                         break;
                 }
                 board.printBoard();
-                System.out.println("Evaluation: " + board.evaluate());
             }
         }
+        in.close();
     }
 }
