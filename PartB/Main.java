@@ -5,7 +5,7 @@ class Main {
 
     public static void main(String Args[]) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader("horn_clause_KB.txt"));
+            BufferedReader br = new BufferedReader(new FileReader("PartB/horn_clause_KB.txt"));
             String line;
             ArrayList<Literal> literals = new ArrayList<Literal>();
             Hashtable<Clause, Integer> count = new Hashtable<>();
