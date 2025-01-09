@@ -1,8 +1,0 @@
-PROVE: Siblings(Bob, Teo)
-FACT: Parent(Alice, Bob)
-FACT: Parent(Bob, Charlie)
-FACT: Parent(Alice, Teo)
-FACT: Siblings(Bob, Alice)
-CLAUSE: Parent(X, Y) AND Parent(X, Z) -> Siblings(Y, Z)
-CLAUSE: Parent(X, Y) AND Parent(X, Z) -> Siblings(Z, Y)
-CLAUSE: Parent(X, Y) AND Siblings(Z, X) -> Uncle(Z, Y)
