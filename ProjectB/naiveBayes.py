@@ -5,13 +5,12 @@ import re
 from collections import Counter
 
 class DatabaseLoader:
-   
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  #to direvtory sto opoio vriskomaste
-    DATA_DIR = os.path.join(BASE_DIR, "aclImdb_v1", "aclImdb")  # to directory rwn dedomenwn
-    TRAINING_POSITIVE = os.path.join(DATA_DIR, "train", "pos")  #antistoixo directory gia kathe paradeigma pou exoume
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__)) #to directory sto opoio vriskomaste
+    DATA_DIR = os.path.join(BASE_DIR, "aclImdb_v1") # to directory rwn dedomenwn
+    TRAINING_POSITIVE = os.path.join(DATA_DIR, "train", "pos") #antistoixo directory gia kathe paradeigma pou exoume
     TRAINING_NEGATIVE = os.path.join(DATA_DIR, "train", "neg")  
     TEST_POSITIVE = os.path.join(DATA_DIR, "test", "pos")       
-    TEST_NEGATIVE = os.path.join(DATA_DIR, "test", "neg")       
+    TEST_NEGATIVE = os.path.join(DATA_DIR, "test", "neg")    
 
     @staticmethod
     def load_reviews(directory: str) -> List[str]:
@@ -90,81 +89,63 @@ class DatabaseLoader:
         return -p_pos * np.log2(p_pos) - p_neg * np.log2(p_neg)  #tupos entropias
 
 class NaiveBayesClassifier:
-    def __init__(self, learning_rate: float = 0.001, epochs: int = 80):
-        self.vocabulary = None
-        self.word_probs_pos = None
-        self.word_probs_neg = None
-        self.p_pos = None
-        self.p_neg = None
-        self.epochs = epochs
-    
-    def train(self, train_pos: list, train_neg: list, vocabulary: dict, alpha: float = 1.0):
+    def __init__(self, vocabulary: Dict[str, int]):
         self.vocabulary = vocabulary
-        total_reviews = len(train_pos) + len(train_neg)
-        self.p_pos = len(train_pos) / total_reviews
-        self.p_neg = len(train_neg) / total_reviews
-        pos_word_counts = Counter(word for review in train_pos for word in set(review.split()))
-        neg_word_counts = Counter(word for review in train_neg for word in set(review.split()))
-        self.word_probs_pos = {
-            word: (pos_word_counts.get(word, 0) + alpha) / (len(train_pos) + 2 * alpha)
-            for word in vocabulary
-        }
-        self.word_probs_neg = {
-            word: (neg_word_counts.get(word, 0) + alpha) / (len(train_neg) + 2 * alpha)
-            for word in vocabulary
-        }
-    
+        self.prior = {}
+        self.conditional_probs = {}
+
+    def train(self, train_pos: List[str], train_neg: List[str]):
+        total_docs = len(train_pos) + len(train_neg)
+        self.prior["pos"] = len(train_pos) / total_docs
+        self.prior["neg"] = len(train_neg) / total_docs
+
+        word_counts = {"pos": Counter(), "neg": Counter()}
+        for review in train_pos:
+            for word in set(review.split()):
+                if word in self.vocabulary:
+                    word_counts["pos"][word] += 1
+        for review in train_neg:
+            for word in set(review.split()):
+                if word in self.vocabulary:
+                    word_counts["neg"][word] += 1
+
+        self.conditional_probs = {"pos": {}, "neg": {}}
+        for word in self.vocabulary:
+            self.conditional_probs["pos"][word] = (word_counts["pos"].get(word, 0) + 1) / (len(train_pos) + 2)
+            self.conditional_probs["neg"][word] = (word_counts["neg"].get(word, 0) + 1) / (len(train_neg) + 2)
+
     def predict(self, text: str) -> str:
         words = set(text.split())
-        log_prob_pos = np.log(self.p_pos)
-        log_prob_neg = np.log(self.p_neg)
+        log_prob_pos = np.log(self.prior["pos"])
+        log_prob_neg = np.log(self.prior["neg"])
+
         for word in self.vocabulary:
             if word in words:
-                log_prob_pos += np.log(self.word_probs_pos[word])
-                log_prob_neg += np.log(self.word_probs_neg[word])
+                log_prob_pos += np.log(self.conditional_probs["pos"].get(word, 1e-6))
+                log_prob_neg += np.log(self.conditional_probs["neg"].get(word, 1e-6))
             else:
-                log_prob_pos += np.log(1 - self.word_probs_pos[word])
-                log_prob_neg += np.log(1 - self.word_probs_neg[word])
-        return "positive" if log_prob_pos > log_prob_neg else "negative"
-    
-    @staticmethod
-    def convert_to_vector(review: str, vocabulary: Dict[str, int]) -> np.ndarray:
-        """Metatroph review se vector"""
-        words = review.split()  #xorisma review se lekseis
-        vector = np.zeros(len(vocabulary)) #megethos vector iso me vocabulary arxika kathe thesh 0
-        for word in words:
-            if word in vocabulary:
-                vector[vocabulary[word]] = 1  #gia kathe leksh tou vocabulary an periexetai sto review kane thn timh autou tou index 1
-        return vector
+                log_prob_pos += np.log(1 - self.conditional_probs["pos"].get(word, 1e-6))
+                log_prob_neg += np.log(1 - self.conditional_probs["neg"].get(word, 1e-6))
 
-def main():
-    # Load a subset of the IMDB dataset
-    train_pos = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_POSITIVE)[:1000]
-    train_neg = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_NEGATIVE)[:1000]
-    test_pos = DatabaseLoader.load_reviews(DatabaseLoader.TEST_POSITIVE)[:500]
-    test_neg = DatabaseLoader.load_reviews(DatabaseLoader.TEST_NEGATIVE)[:500]
+        return "1" if log_prob_pos > log_prob_neg else "0"
 
-    k = 50  # Exclude the 50 most common words
-    n = 50  # Exclude the 50 rarest words
-    m = 2000  # Select the 2000 most informative words
+class main:
+    print("Loading reviews...")
+    train_pos = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_POSITIVE)
+    train_neg = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_NEGATIVE)
+    test_pos = DatabaseLoader.load_reviews(DatabaseLoader.TEST_POSITIVE)
+    test_neg = DatabaseLoader.load_reviews(DatabaseLoader.TEST_NEGATIVE)
 
-    vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k, n, m)
+    print("Creating vocabulary...")
+    vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k=50, n=50)
 
-    classifier = NaiveBayesClassifier()
-    classifier.train(train_pos, train_neg, vocabulary)
+    print("Finalizing vocabulary...")
+    vocabulary = DatabaseLoader.finalize_vocabulary(vocabulary, train_pos, train_neg, m=1000)
 
-    correct = 0
-    total = len(test_pos) + len(test_neg)
+    classifier = NaiveBayesClassifier(vocabulary)
+    classifier.train(train_pos, train_neg)
 
-    for review in test_pos:
-        if classifier.predict(review) == "positive":
-            correct += 1
-
-    for review in test_neg:
-        if classifier.predict(review) == "negative":
-            correct += 1
-
-    accuracy = correct / total
-    print(f"Accuracy: {accuracy * 100:.2f}%")
-
-
+    print("Predicting...")
+    for review in test_pos + test_neg:
+        print(classifier.predict(review))
+    print("Predictions done.")
