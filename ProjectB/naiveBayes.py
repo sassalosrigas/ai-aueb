@@ -148,4 +148,18 @@ class main:
     print("Predicting...")
     for review in test_pos + test_neg:
         print(classifier.predict(review))
+
+    y_true = ["1"] * len(test_pos) + ["0"] * len(test_neg)
+    for review in test_pos + test_neg:
+        y_pred = classifier.predict(review)
+   
+    TP = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "1")
+    FP = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "0" and yp == "1")
+    FN = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "0")
+
+    precision = TP / (TP + FP) if TP + FP > 0 else 0
+    recall = TP / (TP + FN) if TP + FN > 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
+
+    print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1_score:.4f}")
     print("Predictions done.")
