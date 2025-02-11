@@ -73,3 +73,34 @@ class NaiveBayesClassifier:
                 log_prob_pos += np.log(1 - self.word_probs_pos[word])
                 log_prob_neg += np.log(1 - self.word_probs_neg[word])
         return "positive" if log_prob_pos > log_prob_neg else "negative"
+    
+# Load a subset of the IMDB dataset
+train_pos = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_POSITIVE)[:1000]
+train_neg = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_NEGATIVE)[:1000]
+test_pos = DatabaseLoader.load_reviews(DatabaseLoader.TEST_POSITIVE)[:500]
+test_neg = DatabaseLoader.load_reviews(DatabaseLoader.TEST_NEGATIVE)[:500]
+
+k = 50  # Exclude the 50 most common words
+n = 50  # Exclude the 50 rarest words
+m = 2000  # Select the 2000 most informative words
+
+vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k, n, m)
+
+classifier = NaiveBayesClassifier()
+classifier.train(train_pos, train_neg, vocabulary)
+
+correct = 0
+total = len(test_pos) + len(test_neg)
+
+for review in test_pos:
+    if classifier.predict(review) == "positive":
+        correct += 1
+
+for review in test_neg:
+    if classifier.predict(review) == "negative":
+        correct += 1
+
+accuracy = correct / total
+print(f"Accuracy: {accuracy * 100:.2f}%")
+
+
