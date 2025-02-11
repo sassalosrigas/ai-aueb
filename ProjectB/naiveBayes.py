@@ -4,7 +4,7 @@ import re
 from collections import Counter
 
 class DatabaseLoader:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    BASE_DIR = os.path.dirname(os.path.abspath("/Users/rigas/Downloads/aclImdb"))
     DATA_DIR = os.path.join(BASE_DIR, "aclImdb_v1", "aclImdb")
     TRAINING_POSITIVE = os.path.join(DATA_DIR, "train", "pos")
     TRAINING_NEGATIVE = os.path.join(DATA_DIR, "train", "neg")
