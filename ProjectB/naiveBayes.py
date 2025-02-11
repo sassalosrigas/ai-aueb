@@ -22,46 +22,20 @@ class DatabaseLoader:
         return reviews
 
     @staticmethod
-    def create_vocabulary(train_pos: list, train_neg: list, k: int, n: int) -> dict:
+    def create_vocabulary(train_pos: list, train_neg: list, k: int, n: int, m: int) -> dict:
         stopwords = {"the", "is", "in", "for", "where", "when", "to", "at"}
         all_words = Counter()
         for review in train_pos + train_neg:
-            words = review.split()
+            words = set(review.split())
             all_words.update(word for word in words if word not in stopwords and len(word) > 1)
         sorted_words = all_words.most_common()[k:len(all_words) - n]
-        return {word: idx for idx, (word, _) in enumerate(sorted_words)}
+        vocabulary = {word: idx for idx, (word, _) in enumerate(sorted_words[:m])}
+        return vocabulary
 
     @staticmethod
-    def finalize_vocabulary(vocabulary: dict, train_pos: list, train_neg: list, m: int) -> dict:
-        information_gain = {}
-        total_reviews = len(train_pos) + len(train_neg)
-        p_pos = len(train_pos) / total_reviews
-        p_neg = len(train_neg) / total_reviews
-        h = DatabaseLoader.entropy(p_pos, p_neg)
-        pos_word_counts = Counter(word for review in train_pos for word in review.split())
-        neg_word_counts = Counter(word for review in train_neg for word in review.split())
-        for word in vocabulary:
-            reviews_with_word_pos = pos_word_counts.get(word, 0)
-            reviews_with_word_neg = neg_word_counts.get(word, 0)
-            reviews_without_word_pos = len(train_pos) - reviews_with_word_pos
-            reviews_without_word_neg = len(train_neg) - reviews_with_word_neg
-            reviews_with_word = reviews_with_word_pos + reviews_with_word_neg
-            reviews_without_word = reviews_without_word_pos + reviews_without_word_neg
-            p_word = reviews_with_word / total_reviews
-            p_not_word = reviews_without_word / total_reviews
-            h_word = DatabaseLoader.entropy(reviews_with_word_pos, reviews_with_word_neg)
-            h_not_word = DatabaseLoader.entropy(reviews_without_word_pos, reviews_without_word_neg)
-            information_gain[word] = h - p_word * h_word - p_not_word * h_not_word
-        sorted_words = sorted(information_gain.items(), key=lambda x: x[1], reverse=True)
-        return {word: idx for idx, (word, _) in enumerate(sorted_words[:m])}
-
-    @staticmethod
-    def entropy(positives: int, negatives: int) -> float:
-        if positives + negatives == 0 or positives == 0 or negatives == 0:
-            return 0
-        p_pos = positives / (positives + negatives)
-        p_neg = negatives / (positives + negatives)
-        return -p_pos * np.log2(p_pos) - p_neg * np.log2(p_neg)
+    def text_to_vector(text: str, vocabulary: dict) -> np.array:
+        words = set(text.split())
+        return np.array([1 if word in words else 0 for word in vocabulary])
 
 class NaiveBayesClassifier:
     def __init__(self):
