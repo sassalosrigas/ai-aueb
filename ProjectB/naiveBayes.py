@@ -1,3 +1,4 @@
+from typing import Dict, List
 import numpy as np
 import os
 import re
@@ -89,12 +90,13 @@ class DatabaseLoader:
         return -p_pos * np.log2(p_pos) - p_neg * np.log2(p_neg)  #tupos entropias
 
 class NaiveBayesClassifier:
-    def __init__(self):
+    def __init__(self, learning_rate: float = 0.001, epochs: int = 80):
         self.vocabulary = None
         self.word_probs_pos = None
         self.word_probs_neg = None
         self.p_pos = None
         self.p_neg = None
+        self.epochs = epochs
     
     def train(self, train_pos: list, train_neg: list, vocabulary: dict, alpha: float = 1.0):
         self.vocabulary = vocabulary
@@ -125,33 +127,44 @@ class NaiveBayesClassifier:
                 log_prob_neg += np.log(1 - self.word_probs_neg[word])
         return "positive" if log_prob_pos > log_prob_neg else "negative"
     
-# Load a subset of the IMDB dataset
-train_pos = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_POSITIVE)[:1000]
-train_neg = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_NEGATIVE)[:1000]
-test_pos = DatabaseLoader.load_reviews(DatabaseLoader.TEST_POSITIVE)[:500]
-test_neg = DatabaseLoader.load_reviews(DatabaseLoader.TEST_NEGATIVE)[:500]
+    @staticmethod
+    def convert_to_vector(review: str, vocabulary: Dict[str, int]) -> np.ndarray:
+        """Metatroph review se vector"""
+        words = review.split()  #xorisma review se lekseis
+        vector = np.zeros(len(vocabulary)) #megethos vector iso me vocabulary arxika kathe thesh 0
+        for word in words:
+            if word in vocabulary:
+                vector[vocabulary[word]] = 1  #gia kathe leksh tou vocabulary an periexetai sto review kane thn timh autou tou index 1
+        return vector
 
-k = 50  # Exclude the 50 most common words
-n = 50  # Exclude the 50 rarest words
-m = 2000  # Select the 2000 most informative words
+def main():
+    # Load a subset of the IMDB dataset
+    train_pos = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_POSITIVE)[:1000]
+    train_neg = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_NEGATIVE)[:1000]
+    test_pos = DatabaseLoader.load_reviews(DatabaseLoader.TEST_POSITIVE)[:500]
+    test_neg = DatabaseLoader.load_reviews(DatabaseLoader.TEST_NEGATIVE)[:500]
 
-vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k, n, m)
+    k = 50  # Exclude the 50 most common words
+    n = 50  # Exclude the 50 rarest words
+    m = 2000  # Select the 2000 most informative words
 
-classifier = NaiveBayesClassifier()
-classifier.train(train_pos, train_neg, vocabulary)
+    vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k, n, m)
 
-correct = 0
-total = len(test_pos) + len(test_neg)
+    classifier = NaiveBayesClassifier()
+    classifier.train(train_pos, train_neg, vocabulary)
 
-for review in test_pos:
-    if classifier.predict(review) == "positive":
-        correct += 1
+    correct = 0
+    total = len(test_pos) + len(test_neg)
 
-for review in test_neg:
-    if classifier.predict(review) == "negative":
-        correct += 1
+    for review in test_pos:
+        if classifier.predict(review) == "positive":
+            correct += 1
 
-accuracy = correct / total
-print(f"Accuracy: {accuracy * 100:.2f}%")
+    for review in test_neg:
+        if classifier.predict(review) == "negative":
+            correct += 1
+
+    accuracy = correct / total
+    print(f"Accuracy: {accuracy * 100:.2f}%")
 
 
