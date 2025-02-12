@@ -8,13 +8,14 @@ import matplotlib.pyplot as plt
 class DatabaseLoader:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # directory of this file
     DATA_DIR = os.path.join(BASE_DIR, "aclImdb_v1") # directory of the dataset
-    TRAINING_POSITIVE = os.path.join(DATA_DIR, "train", "pos")
-    TRAINING_NEGATIVE = os.path.join(DATA_DIR, "train", "neg")
-    TEST_POSITIVE = os.path.join(DATA_DIR, "test", "pos")
-    TEST_NEGATIVE = os.path.join(DATA_DIR, "test", "neg")
+    TRAINING_POSITIVE = os.path.join(DATA_DIR, "train", "pos") # directory of the positive training reviews
+    TRAINING_NEGATIVE = os.path.join(DATA_DIR, "train", "neg") # directory of the negative training reviews
+    TEST_POSITIVE = os.path.join(DATA_DIR, "test", "pos") # directory of the positive test reviews
+    TEST_NEGATIVE = os.path.join(DATA_DIR, "test", "neg") # directory of the negative test reviews
 
     @staticmethod
-    def load_reviews(directory: str) -> List[str]:
+    def load_reviews(directory: str) -> List[str]: # load reviews from a directory
+        """for every file in the directory, read the content, clean it up and append it to the reviews list"""
         reviews = []
         for root, _, files in os.walk(directory):
             for file in files:
@@ -25,6 +26,7 @@ class DatabaseLoader:
 
     @staticmethod
     def create_vocabulary(train_pos: List[str], train_neg: List[str], k: int, n: int) -> Dict[str, int]:
+        """create a vocabulary from the training data by counting the frequency of each word"""
         stopwords = {"the", "is", "in", "for", "where", "when", "to", "at"}
         all_words = Counter()
 
@@ -40,6 +42,7 @@ class DatabaseLoader:
 
     @staticmethod
     def finalize_vocabulary(vocabulary: Dict[str, int], train_pos: List[str], train_neg: List[str], m: int) -> Dict[str, int]:
+        """select the top m words from the vocabulary using information gain"""
         information_gain = {}
         total_reviews = len(train_pos) + len(train_neg)
 
@@ -73,6 +76,7 @@ class DatabaseLoader:
 
     @staticmethod
     def entropy(positives: int, negatives: int) -> float:
+        """calculate the entropy of a classification"""
         if positives + negatives == 0 or positives == 0 or negatives == 0:
             return 0
         p_pos = positives / (positives + negatives)
@@ -81,11 +85,13 @@ class DatabaseLoader:
 
 class NaiveBayesClassifier:
     def __init__(self, vocabulary: Dict[str, int]):
+        """initialize the classifier with the vocabulary"""
         self.vocabulary = vocabulary
         self.prior = {}
         self.conditional_probs = {}
 
     def train(self, train_pos: List[str], train_neg: List[str]):
+        """train the classifier using the training data"""
         total_docs = len(train_pos) + len(train_neg)
         self.prior["pos"] = len(train_pos) / total_docs
         self.prior["neg"] = len(train_neg) / total_docs
@@ -106,6 +112,7 @@ class NaiveBayesClassifier:
             self.conditional_probs["neg"][word] = (word_counts["neg"].get(word, 0) + 1) / (len(train_neg) + 2)
 
     def predict(self, text: str) -> str:
+        """predict the class of a review"""
         words = set(text.split())
         log_prob_pos = np.log(self.prior["pos"])
         log_prob_neg = np.log(self.prior["neg"])
@@ -121,6 +128,7 @@ class NaiveBayesClassifier:
         return "1" if log_prob_pos > log_prob_neg else "0"
 
 def evaluate(y_true, y_pred):
+    """evaluate the classifier using precision, recall and F1 score"""
     TP = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "1")
     FP = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "0" and yp == "1")
     FN = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "0")
@@ -132,6 +140,7 @@ def evaluate(y_true, y_pred):
     return precision, recall, f1_score
 
 def plot_learning_curve(train_sizes, train_scores, dev_scores, metric_name):
+    """plot the learning curve of the classifier"""
     plt.figure()
     plt.plot(train_sizes, train_scores, 'o-', label=f"Training {metric_name}")
     plt.plot(train_sizes, dev_scores, 'o-', label=f"Development {metric_name}")
@@ -142,6 +151,7 @@ def plot_learning_curve(train_sizes, train_scores, dev_scores, metric_name):
     plt.show()
 
 def main():
+    """main function. Load the reviews, create the vocabulary, train the classifier and evaluate it"""
     print("Loading reviews...")
     train_pos = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_POSITIVE)
     train_neg = DatabaseLoader.load_reviews(DatabaseLoader.TRAINING_NEGATIVE)
@@ -192,6 +202,7 @@ def main():
     y_test_pred = [classifier.predict(review) for review in test_pos + test_neg]
     precision, recall, f1 = evaluate(y_test_true, y_test_pred)
 
+    # print the statistics and results
     print(f"Test Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}")
 
 if __name__ == "__main__":
