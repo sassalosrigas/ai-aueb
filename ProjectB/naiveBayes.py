@@ -178,10 +178,10 @@ def main():
     test_neg = DatabaseLoader.load_reviews(DatabaseLoader.TEST_NEGATIVE)
 
     print("Creating vocabulary...")
-    vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k=50, n=50)
+    vocabulary = DatabaseLoader.create_vocabulary(train_pos, train_neg, k=100, n=100)
 
     print("Finalizing vocabulary...")
-    vocabulary = DatabaseLoader.finalize_vocabulary(vocabulary, train_pos, train_neg, m=1000)
+    vocabulary = DatabaseLoader.finalize_vocabulary(vocabulary, train_pos, train_neg, m=5000)
 
     classifier = NaiveBayesClassifier(vocabulary)
 
