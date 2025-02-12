@@ -1,9 +1,10 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import numpy as np
 import os
 import re
 from collections import Counter
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report, accuracy_score
 
 class DatabaseLoader:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # directory of this file
@@ -127,17 +128,35 @@ class NaiveBayesClassifier:
 
         return "1" if log_prob_pos > log_prob_neg else "0"
 
-def evaluate(y_true, y_pred):
+def evaluate(y_true, y_pred) -> Tuple[float, float, float, float, float, float, float]:
     """evaluate the classifier using precision, recall and F1 score"""
-    TP = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "1")
-    FP = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "0" and yp == "1")
-    FN = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "0")
+    TP_pos = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "1")
+    FP_pos = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "0" and yp == "1")
+    FN_pos = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "0")
 
-    precision = TP / (TP + FP) if TP + FP > 0 else 0
-    recall = TP / (TP + FN) if TP + FN > 0 else 0
-    f1_score = 2 * (precision * recall) / (precision + recall) if precision + recall > 0 else 0
+    TP_neg = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "0" and yp == "0")
+    FP_neg = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "1" and yp == "0")
+    FN_neg = sum(1 for yt, yp in zip(y_true, y_pred) if yt == "0" and yp == "1")
 
-    return precision, recall, f1_score
+    precision_pos = TP_pos / (TP_pos + FP_pos) if TP_pos + FP_pos > 0 else 0
+    recall_pos = TP_pos / (TP_pos + FN_pos) if TP_pos + FN_pos > 0 else 0
+    f1_pos = 2 * (precision_pos * recall_pos) / (precision_pos + recall_pos) if precision_pos + recall_pos > 0 else 0
+
+    precision_neg = TP_neg / (TP_neg + FP_neg) if TP_neg + FP_neg > 0 else 0
+    recall_neg = TP_neg / (TP_neg + FN_neg) if TP_neg + FN_neg > 0 else 0
+    f1_neg = 2 * (precision_neg * recall_neg) / (precision_neg + recall_neg) if precision_neg + recall_neg > 0 else 0
+
+    # Micro-averaged metrics
+    micro_precision = (TP_pos + TP_neg) / (TP_pos + TP_neg + FP_pos + FP_neg) if TP_pos + TP_neg + FP_pos + FP_neg > 0 else 0
+    micro_recall = (TP_pos + TP_neg) / (TP_pos + TP_neg + FN_pos + FN_neg) if TP_pos + TP_neg + FN_pos + FN_neg > 0 else 0
+    micro_f1 = 2 * (micro_precision * micro_recall) / (micro_precision + micro_recall) if micro_precision + micro_recall > 0 else 0
+
+    # Macro-averaged metrics
+    macro_precision = (precision_pos + precision_neg) / 2
+    macro_recall = (recall_pos + recall_neg) / 2
+    macro_f1 = (f1_pos + f1_neg) / 2
+
+    return precision_pos, recall_pos, f1_pos, precision_neg, recall_neg, f1_neg, micro_precision, micro_recall, micro_f1, macro_precision, macro_recall, macro_f1
 
 def plot_learning_curve(train_sizes, train_scores, dev_scores, metric_name):
     """plot the learning curve of the classifier"""
@@ -178,18 +197,18 @@ def main():
         # Evaluate on training data
         y_train_true = ["1"] * (size//2) + ["0"] * (size//2)
         y_train_pred = [classifier.predict(review) for review in train_pos[:size//2] + train_neg[:size//2]]
-        precision, recall, f1 = evaluate(y_train_true, y_train_pred)
-        train_precisions.append(precision)
-        train_recalls.append(recall)
-        train_f1s.append(f1)
+        precision_pos, recall_pos, f1_pos, precision_neg, recall_neg, f1_neg, micro_precision, micro_recall, micro_f1, macro_precision, macro_recall, macro_f1 = evaluate(y_train_true, y_train_pred)
+        train_precisions.append(macro_precision)
+        train_recalls.append(macro_recall)
+        train_f1s.append(macro_f1)
 
         # Evaluate on development data
         y_dev_true = ["1"] * len(test_pos) + ["0"] * len(test_neg)
         y_dev_pred = [classifier.predict(review) for review in test_pos + test_neg]
-        precision, recall, f1 = evaluate(y_dev_true, y_dev_pred)
-        dev_precisions.append(precision)
-        dev_recalls.append(recall)
-        dev_f1s.append(f1)
+        precision_pos, recall_pos, f1_pos, precision_neg, recall_neg, f1_neg, micro_precision, micro_recall, micro_f1, macro_precision, macro_recall, macro_f1 = evaluate(y_dev_true, y_dev_pred)
+        dev_precisions.append(macro_precision)
+        dev_recalls.append(macro_recall)
+        dev_f1s.append(macro_f1)
 
     # Plot learning curves
     plot_learning_curve(train_sizes, train_precisions, dev_precisions, "Precision")
@@ -200,10 +219,25 @@ def main():
     print("Evaluating on test data...")
     y_test_true = ["1"] * len(test_pos) + ["0"] * len(test_neg)
     y_test_pred = [classifier.predict(review) for review in test_pos + test_neg]
-    precision, recall, f1 = evaluate(y_test_true, y_test_pred)
+    precision_pos, recall_pos, f1_pos, precision_neg, recall_neg, f1_neg, micro_precision, micro_recall, micro_f1, macro_precision, macro_recall, macro_f1 = evaluate(y_test_true, y_test_pred)
 
-    # print the statistics and results
-    print(f"Test Precision: {precision:.4f}, Recall: {recall:.4f}, F1 Score: {f1:.4f}")
+    # Print classification report
+    print("\nClassification Report:")
+    print(classification_report(y_test_true, y_test_pred, target_names=["Negative (0)", "Positive (1)"]))
+
+    # Print accuracy
+    accuracy = accuracy_score(y_test_true, y_test_pred)
+    print(f"Accuracy: {accuracy:.4f}")
+
+    # Print macro-averaged metrics
+    print(f"Macro-averaged Precision: {macro_precision:.4f}")
+    print(f"Macro-averaged Recall: {macro_recall:.4f}")
+    print(f"Macro-averaged F1 Score: {macro_f1:.4f}")
+
+    # Print micro-averaged metrics
+    print(f"Micro-averaged Precision: {micro_precision:.4f}")
+    print(f"Micro-averaged Recall: {micro_recall:.4f}")
+    print(f"Micro-averaged F1 Score: {micro_f1:.4f}")
 
 if __name__ == "__main__":
     main()
