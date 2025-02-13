@@ -1,1 +1,5 @@
 aclImdb_v1/
+
+# Ignore GloVe embeddings
+glove.6B.*
+glove/
