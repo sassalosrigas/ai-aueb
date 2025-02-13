@@ -1,7 +1,6 @@
 import os
 import re
 from collections import Counter
-from typing import List, Dict
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.feature_extraction.text import CountVectorizer
