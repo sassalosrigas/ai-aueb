@@ -21,34 +21,33 @@ def main():
     print("Finalizing vocabulary...")
     vocabulary = DatabaseLoader.finalize_vocabulary(vocabulary, train_pos, train_neg, m=5000)
 
-    # Combine training and test data
+    # Combine the data
     X_train = train_pos + train_neg
     y_train = ["1"] * len(train_pos) + ["0"] * len(train_neg)
     X_test = test_pos + test_neg
     y_test = ["1"] * len(test_pos) + ["0"] * len(test_neg)
 
-    # Convert text data to feature vectors using the vocabulary
-    vectorizer = CountVectorizer(vocabulary=vocabulary.keys())
-    X_train_vec = (vectorizer.transform(X_train) > 0).astype(int)
-    X_test_vec = (vectorizer.transform(X_test) > 0).astype(int)
+    # Vectorize the data
+    vectorizer = CountVectorizer(vocabulary=vocabulary.keys(), binary=True)
+    X_train_vec = vectorizer.transform(X_train)
+    X_test_vec = vectorizer.transform(X_test)
 
-    # Train scikit-learn's Bernoulli Naive Bayes classifier
+    # Train BernoulliNB classifier
     print("Training scikit-learn's Bernoulli Naive Bayes classifier...")
-
     classifier = BernoulliNB()
     classifier.fit(X_train_vec, y_train)
 
-    # Evaluate scikit-learn's classifier
+    # Evaluate classifier
     print("Evaluating scikit-learn's classifier...")
     y_test_pred_sk = classifier.predict(X_test_vec)
 
     # Print classification report
-    print("\nScikit-learn Classification Report:")
+    print("\nBernoulliNB Classification Report:")
     print(classification_report(y_test, y_test_pred_sk, target_names=["Negative (0)", "Positive (1)"]))
 
     # Print accuracy
     accuracy_sk = accuracy_score(y_test, y_test_pred_sk)
-    print(f"Scikit-learn Accuracy: {accuracy_sk:.4f}")
+    print(f"Accuracy: {accuracy_sk:.4f}")
 
     # Calculate macro-averaged and micro-averaged metrics
     macro_precision = precision_score(y_test, y_test_pred_sk, average="macro", zero_division=0)
@@ -60,14 +59,14 @@ def main():
     micro_f1 = f1_score(y_test, y_test_pred_sk, average="micro")
 
     # Print macro-averaged metrics
-    print(f"Scikit-learn Macro-averaged Precision: {macro_precision:.4f}")
-    print(f"Scikit-learn Macro-averaged Recall: {macro_recall:.4f}")
-    print(f"Scikit-learn Macro-averaged F1 Score: {macro_f1:.4f}")
+    print(f"Macro-averaged Precision: {macro_precision:.4f}")
+    print(f"Macro-averaged Recall: {macro_recall:.4f}")
+    print(f"Macro-averaged F1 Score: {macro_f1:.4f}")
 
     # Print micro-averaged metrics
-    print(f"Scikit-learn Micro-averaged Precision: {micro_precision:.4f}")
-    print(f"Scikit-learn Micro-averaged Recall: {micro_recall:.4f}")
-    print(f"Scikit-learn Micro-averaged F1 Score: {micro_f1:.4f}")
+    print(f"Micro-averaged Precision: {micro_precision:.4f}")
+    print(f"Micro-averaged Recall: {micro_recall:.4f}")
+    print(f"Micro-averaged F1 Score: {micro_f1:.4f}")
 
     # Learning curves
     train_sizes = [100, 500, 1000, 2000, 5000, 10000]
@@ -77,29 +76,28 @@ def main():
     for size in train_sizes:
         print(f"Training with {size} examples...")
         # Subset the training data
-        X_train_subset = X_train[:size]
-        y_train_subset = y_train[:size]
+        X_train_subset = train_pos[:size//2] + train_neg[:size//2]
+        y_train_subset = ["1"] * (size//2) + ["0"] * (size//2)
 
         # Train on the subset
-        classifier.fit(vectorizer.transform(X_train_subset), y_train_subset)
+        X_train_subset_vec = vectorizer.transform(X_train_subset)
+        classifier.fit(X_train_subset_vec, y_train_subset)
 
         # Evaluate on training data
-        y_train_pred = classifier.predict(vectorizer.transform(X_train_subset))
-
-        print(f"Predicted class distribution: {Counter(y_train_pred)}")
-
-        macro_precision_train = precision_score(y_train_subset, y_train_pred, average="macro")
-        macro_recall_train = recall_score(y_train_subset, y_train_pred, average="macro")
-        macro_f1_train = f1_score(y_train_subset, y_train_pred, average="macro")
+        y_train_pred = classifier.predict(X_train_subset_vec)
+        
+        macro_precision_train = precision_score(y_train_subset, y_train_pred, average="macro", zero_division=0)
+        macro_recall_train = recall_score(y_train_subset, y_train_pred, average="macro", zero_division=0)
+        macro_f1_train = f1_score(y_train_subset, y_train_pred, average="macro", zero_division=0)
         train_precisions.append(macro_precision_train)
         train_recalls.append(macro_recall_train)
         train_f1s.append(macro_f1_train)
 
         # Evaluate on test data
         y_test_pred = classifier.predict(X_test_vec)
-        macro_precision_test = precision_score(y_test, y_test_pred, average="macro")
-        macro_recall_test = recall_score(y_test, y_test_pred, average="macro")
-        macro_f1_test = f1_score(y_test, y_test_pred, average="macro")
+        macro_precision_test = precision_score(y_test, y_test_pred, average="macro", zero_division=0)
+        macro_recall_test = recall_score(y_test, y_test_pred, average="macro", zero_division=0)
+        macro_f1_test = f1_score(y_test, y_test_pred, average="macro", zero_division=0)
         dev_precisions.append(macro_precision_test)
         dev_recalls.append(macro_recall_test)
         dev_f1s.append(macro_f1_test)
